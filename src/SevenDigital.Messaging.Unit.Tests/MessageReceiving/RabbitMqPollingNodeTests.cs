@@ -29,7 +29,7 @@ namespace SevenDigital.Messaging.Unit.Tests.MessageReceiving
 
 			_endpoint.ToString().Returns(_destinationName);
 
-			_subject = new RabbitMqPollingNode(_endpoint, _messagingBase, _sleepWrapper);
+			_subject = new RabbitMqPollingNode(_endpoint, string.Empty, _messagingBase, _sleepWrapper);
 		}
 
 		[Test]

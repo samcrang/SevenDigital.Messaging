@@ -38,6 +38,16 @@ namespace SevenDigital.Messaging.MessageSending.LocalQueue
 		/// <param name="message">Message to be send. This must be a serialisable type</param>
 		public void SendMessage<T>(T message) where T : class, IMessage
 		{
+			SendMessage(message, string.Empty);
+		}
+
+		/// <summary>
+		/// Send the given message. Does not guarantee reception.
+		/// </summary>
+		/// <param name="message">Message to be send. This must be a serialisable type</param>
+		/// <param name="routingKey">Routing key used to send the message</param>
+		public void SendMessage<T>(T message, string routingKey) where T : class, IMessage
+		{
 			var data = Encoding.UTF8.GetBytes(_serialiser.Serialise(message));
 
 			using (var queue = PersistentQueue.WaitFor(_writePath, TimeSpan.FromMinutes(1)))

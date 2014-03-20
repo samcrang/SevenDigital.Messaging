@@ -33,6 +33,16 @@ namespace SevenDigital.Messaging.Loopback
 		/// </summary>
 		public IReceiverNode TakeFrom(Endpoint endpoint, Action<IMessageBinding> bindings)
 		{
+			return TakeFrom(endpoint, string.Empty, bindings);
+		}
+
+		/// <summary>
+		/// Map handlers to a listener on a named endpoint.
+		/// All other listeners on this endpoint will compete for messages
+		/// (i.e. only one listener will get a given message)
+		/// </summary>
+		public IReceiverNode TakeFrom(Endpoint endpoint, string routingKey, Action<IMessageBinding> bindings)
+		{
 			// In the real version, agents compete for incoming messages.
 			// In this test version, we only really bind the first listener for a given endpoint -- roughly the same effect!
 			if (capturedEndpoints.Contains(endpoint.ToString())) return new DummyReceiver();
@@ -80,7 +90,7 @@ namespace SevenDigital.Messaging.Loopback
 		/// <summary>
 		/// Send a message to appropriate handlers
 		/// </summary>
-		public void Send<T>(T message) where T : IMessage
+		public void Send<T>(T message, string routingKey) where T : IMessage
 		{
 			var hooks = ObjectFactory.GetAllInstances<IEventHook>();
 			foreach (var hook in hooks)
@@ -88,10 +98,10 @@ namespace SevenDigital.Messaging.Loopback
 				hook.MessageSent(message);
 			}
 
-			FireCooperativeListeners(message);
+			FireCooperativeListeners(message, routingKey);
 		}
 
-		void FireCooperativeListeners<T>(T message) where T : IMessage
+		void FireCooperativeListeners<T>(T message, string routingKey) where T : IMessage
 		{
 			var msg = message.GetType();
 			var matches = listenerBindings.MessagesRegistered.Where(k => k.IsAssignableFrom(msg));

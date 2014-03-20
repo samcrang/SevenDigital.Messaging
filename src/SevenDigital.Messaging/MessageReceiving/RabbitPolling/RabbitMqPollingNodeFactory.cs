@@ -23,9 +23,9 @@ namespace SevenDigital.Messaging.MessageReceiving.RabbitPolling
 		/// <summary>
 		/// Create a Messaging Base driven polling work queue
 		/// </summary>
-		public ITypedPollingNode Create(IRoutingEndpoint endpoint)
+		public ITypedPollingNode Create(IRoutingEndpoint endpoint, string routingKey)
 		{
-			return new RabbitMqPollingNode(endpoint, _messagingBase, _sleeper);
+			return new RabbitMqPollingNode(endpoint, routingKey, _messagingBase, _sleeper);
 		}
 	}
 }

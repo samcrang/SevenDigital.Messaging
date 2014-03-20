@@ -34,7 +34,7 @@ namespace SevenDigital.Messaging.Unit.Tests.MessageReceiving
 			_poller = Substitute.For<ITypedPollingNode>();
 			
 			_pollerFactory = Substitute.For<IPollingNodeFactory>();
-			_pollerFactory.Create(Arg.Any<IRoutingEndpoint>()).Returns(_poller);
+			_pollerFactory.Create(Arg.Any<IRoutingEndpoint>(), Arg.Any<string>()).Returns(_poller);
 
 			_dispatcher = Substitute.For<IDispatch<IPendingMessage<object>>>();
 
@@ -43,7 +43,7 @@ namespace SevenDigital.Messaging.Unit.Tests.MessageReceiving
 				.Returns(_dispatcher);
 
 			_subject = new ReceiverNode(
-				_parent, _endpoint, _handlerManager, _pollerFactory, _dispatcherFactory
+				_parent, _endpoint, string.Empty, _handlerManager, _pollerFactory, _dispatcherFactory
 				);
 		}
 

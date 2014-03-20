@@ -18,20 +18,22 @@ namespace SevenDigital.Messaging.MessageReceiving.RabbitPolling
 		readonly IMessagingBase _messagingBase;
 		readonly ISleepWrapper _sleeper;
 		readonly ConcurrentSet<Type> _boundMessageTypes;
+		readonly string _routingKey;
 
 		/// <summary>
 		/// Create a work item queue that will try to pull items from a named RabbitMQ endpoint
 		/// </summary>
 		/// <param name="endpoint">Destination endpoint to pull messages from</param>
+		/// <param name="routingKey"></param>
 		/// <param name="messagingBase">RabbitMQ connection provider</param>
 		/// <param name="sleeper">Sleeper to rate limit polling</param>
-		public RabbitMqPollingNode(IRoutingEndpoint endpoint,
-			IMessagingBase messagingBase, ISleepWrapper sleeper)
+		public RabbitMqPollingNode(IRoutingEndpoint endpoint, string routingKey, IMessagingBase messagingBase, ISleepWrapper sleeper)
 		{
 			_endpoint = endpoint.ToString();
 			_messagingBase = messagingBase;
 			_sleeper = sleeper;
 			_boundMessageTypes = new ConcurrentSet<Type>();
+			_routingKey = routingKey;
 		}
 
 		/// <summary>
@@ -160,7 +162,7 @@ namespace SevenDigital.Messaging.MessageReceiving.RabbitPolling
 			var boundTypes = _boundMessageTypes.ToArray();
 			foreach (var sourceMessage in boundTypes)
 			{
-				_messagingBase.CreateDestination(sourceMessage, _endpoint, string.Empty, ExchangeType.Topic);
+				_messagingBase.CreateDestination(sourceMessage, _endpoint, _routingKey, ExchangeType.Topic);
 			}
 		}
 	}

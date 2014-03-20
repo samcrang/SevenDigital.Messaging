@@ -56,12 +56,23 @@ namespace SevenDigital.Messaging.MessageReceiving
 		/// </summary>
 		public IReceiverNode TakeFrom(Endpoint endpoint, Action<IMessageBinding> bindings)
 		{
+			return TakeFrom(endpoint, string.Empty, bindings);
+		}
+
+		/// <summary>
+		/// Map handlers to a listener on a named endpoint.
+		/// All other listeners on this endpoint will compete for messages
+		/// (i.e. only one listener will get a given message)
+		/// </summary>
+		public IReceiverNode TakeFrom(Endpoint endpoint, string routingKey, Action<IMessageBinding> bindings)
+		{
 			lock (_lockObject)
 			{
 				if (PurgeOnConnect) PurgeEndpoint(endpoint);
 
-				var node = new ReceiverNode(this,
-					endpoint, ObjectFactory.GetInstance<IHandlerManager>(), 
+				var node = new ReceiverNode(
+					this, endpoint, routingKey,
+					ObjectFactory.GetInstance<IHandlerManager>(),
 					_pollerFactory, _dispatchFactory);
 				_registeredNodes.Add(node);
 

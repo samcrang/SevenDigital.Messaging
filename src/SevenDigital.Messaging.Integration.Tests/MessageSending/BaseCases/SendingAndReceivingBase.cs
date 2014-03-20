@@ -38,7 +38,10 @@ namespace SevenDigital.Messaging.Integration.Tests.MessageSending.BaseCases
 		}
 
 		[TearDown]
-		public void Stop() { MessagingSystem.Control.Shutdown(); }
+		public void TearDown()
+		{
+			MessagingSystem.Control.Shutdown();
+		}
 
 		[Test]
 		public void Handler_should_react_for_all_message_types_it_is_handling()
@@ -141,10 +144,52 @@ namespace SevenDigital.Messaging.Integration.Tests.MessageSending.BaseCases
 			{
 				_sender.SendMessage(new BatmanMessage());
 				var superheroSignal = SuperHeroMessageHandler.AutoResetEvent.WaitOne(ShortInterval);
-				var villanSignal = VillainMessageHandler.AutoResetEvent.WaitOne(ShortInterval);
+				var villainSignal = VillainMessageHandler.AutoResetEvent.WaitOne(ShortInterval);
 
-				Assert.That(superheroSignal || villanSignal, Is.True);
-				Assert.That(superheroSignal && villanSignal, Is.False);
+				Assert.That(superheroSignal || villainSignal, Is.True);
+				Assert.That(superheroSignal && villainSignal, Is.False);
+			}
+		}
+
+		[Test]
+		public void Should_not_send_to_queue_if_the_routing_key_does_not_match()
+		{
+			using (
+				_receiver.TakeFrom("Test_listener_shared-endpoint", "routingKey",
+				_ => _.Handle<IComicBookCharacterMessage>().With<SuperHeroMessageHandler>())
+				)
+			{
+				_sender.SendMessage(new BatmanMessage(),"spanners");
+				var superheroSignal = SuperHeroMessageHandler.AutoResetEvent.WaitOne(ShortInterval);
+				Assert.That(superheroSignal, Is.False);
+			}
+		}
+
+		[Test]
+		public void Should_send_to_queue_if_the_routing_key_is_a_special_match()
+		{
+			using (
+				_receiver.TakeFrom("Test_listener_shared-endpoint", "#",
+				_ => _.Handle<IComicBookCharacterMessage>().With<SuperHeroMessageHandler>())
+				)
+			{
+				_sender.SendMessage(new BatmanMessage(), "spanners");
+				var superheroSignal = SuperHeroMessageHandler.AutoResetEvent.WaitOne(ShortInterval);
+				Assert.That(superheroSignal, Is.True);
+			}
+		}
+
+		[Test]
+		public void Should_send_to_queue_if_the_routing_key_matches()
+		{
+			using (
+				_receiver.TakeFrom("Test_listener_shared-endpoint", "routingKey",
+				_ => _.Handle<IComicBookCharacterMessage>().With<SuperHeroMessageHandler>())
+				)
+			{
+				_sender.SendMessage(new BatmanMessage(), "routingKey");
+				var superheroSignal = SuperHeroMessageHandler.AutoResetEvent.WaitOne(ShortInterval);
+				Assert.That(superheroSignal, Is.True);
 			}
 		}
 
@@ -193,7 +238,6 @@ namespace SevenDigital.Messaging.Integration.Tests.MessageSending.BaseCases
 			{
 			}
 
-
 			using (var receiverNode = _receiver.TakeFrom("Backlog.Integration.Queue", _ => { }))
 			{
 				for (int i = 0; i < 100; i++)
@@ -229,7 +273,6 @@ namespace SevenDigital.Messaging.Integration.Tests.MessageSending.BaseCases
 				Assert.That(recvd, Is.EqualTo(expected),
 					"Sent: "+sent+"; Received: "+recvd);
 			}
-
 		}
 	}
 }

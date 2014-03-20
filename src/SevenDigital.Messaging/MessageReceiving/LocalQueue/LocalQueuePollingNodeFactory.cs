@@ -33,7 +33,7 @@ namespace SevenDigital.Messaging.MessageReceiving.LocalQueue
 		/// Create a worker queue for the named endpoint.
 		/// <para>endpoint names are ignored for local queues</para>
 		/// </summary>
-		public ITypedPollingNode Create(IRoutingEndpoint endpoint)
+		public ITypedPollingNode Create(IRoutingEndpoint endpoint, string routingKey)
 		{
 			return new LocalQueuePollingNode(_dispatchPath, _incomingPath, _serialiser, _sleeper);
 		}

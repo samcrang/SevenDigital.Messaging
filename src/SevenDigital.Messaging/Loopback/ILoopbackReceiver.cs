@@ -8,6 +8,6 @@ namespace SevenDigital.Messaging.Loopback
 		/// <summary>
 		/// Send a message
 		/// </summary>
-		void Send<T>(T message) where T : IMessage;
+		void Send<T>(T message, string routingKey) where T : IMessage;
 	}
 }

@@ -25,21 +25,19 @@ namespace SevenDigital.Messaging.MessageReceiving
 		readonly IDispatch<IPendingMessage<object>> _receivingDispatcher;
 		readonly IHandlerManager _handler; // message type => [handler types]
 		readonly ITypedPollingNode _pollingNode;
+		readonly string _routingKey;
 
 		/// <summary>
 		/// Create a new message receiver node. You do not need to create this yourself. Use `Messaging.Receiver()`
 		/// </summary>
-		public ReceiverNode(
-			IReceiverControl parent,
-			IRoutingEndpoint endpoint,
-			IHandlerManager handler,
-			IPollingNodeFactory pollerFactory,
-			IDispatcherFactory dispatchFactory)
+		public ReceiverNode(IReceiverControl parent, IRoutingEndpoint endpoint, string routingKey,
+			IHandlerManager handler, IPollingNodeFactory pollerFactory, IDispatcherFactory dispatchFactory)
 		{
 			_parent = parent;
 			_endpoint = endpoint;
+			_routingKey = routingKey;
 			_handler = handler;
-			_pollingNode = pollerFactory.Create(endpoint);
+			_pollingNode = pollerFactory.Create(endpoint, routingKey);
 
 			_receivingDispatcher = dispatchFactory.Create(
 				_pollingNode,
@@ -114,26 +112,23 @@ namespace SevenDigital.Messaging.MessageReceiving
 		#region Equality members
 
 #pragma warning disable 1591
-		public bool Equals(ReceiverNode other)
+		private bool Equals(ReceiverNode other)
 		{
-			if (ReferenceEquals(null, other)) return false;
-			if (ReferenceEquals(this, other)) return true;
-			return Equals(other._endpoint, _endpoint);
+			return Equals(_endpoint, other._endpoint) && string.Equals(_routingKey, other._routingKey);
 		}
 
 		public override bool Equals(object obj)
 		{
 			if (ReferenceEquals(null, obj)) return false;
 			if (ReferenceEquals(this, obj)) return true;
-			if (obj.GetType() != typeof(ReceiverNode)) return false;
-			return Equals((ReceiverNode)obj);
+			return obj is ReceiverNode && Equals((ReceiverNode) obj);
 		}
 
 		public override int GetHashCode()
 		{
 			unchecked
 			{
-				return (_endpoint != null ? _endpoint.GetHashCode() : 0);
+				return ((_endpoint != null ? _endpoint.GetHashCode() : 0)*397) ^ (_routingKey != null ? _routingKey.GetHashCode() : 0);
 			}
 		}
 #pragma warning restore 1591

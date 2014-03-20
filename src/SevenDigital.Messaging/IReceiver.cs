@@ -16,6 +16,13 @@ namespace SevenDigital.Messaging
 		IReceiverNode TakeFrom(Endpoint endpoint, Action<IMessageBinding> bindings);
 
 		/// <summary>
+		/// Map handlers to a listener on a named endpoint.
+		/// All other listeners on this endpoint will compete for messages
+		/// (i.e. only one listener will get a given message)
+		/// </summary>
+		IReceiverNode TakeFrom(Endpoint endpoint, string routingKey, Action<IMessageBinding> bindings);
+
+		/// <summary>
 		/// Map handlers to a listener on a unique endpoint.
 		/// All listeners mapped this way will receive all messages.
 		/// </summary>

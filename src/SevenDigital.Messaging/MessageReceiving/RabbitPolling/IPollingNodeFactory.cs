@@ -10,6 +10,6 @@ namespace SevenDigital.Messaging.MessageReceiving.RabbitPolling
 		/// <summary>
 		/// Create a worker queue for the named endpoint
 		/// </summary>
-		ITypedPollingNode Create(IRoutingEndpoint endpoint);
+		ITypedPollingNode Create(IRoutingEndpoint endpoint, string routingKey);
 	}
 }

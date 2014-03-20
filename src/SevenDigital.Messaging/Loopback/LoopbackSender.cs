@@ -26,7 +26,17 @@ namespace SevenDigital.Messaging.Loopback
 		/// <param name="message">Message to be send. This must be a serialisable type</param>
 		public void SendMessage<T>(T message) where T : class, IMessage
 		{
-			_loopbackReceiver.Send(message);
+			SendMessage(message, string.Empty);
+		}
+
+		/// <summary>
+		/// Send the given message. Does not guarantee reception.
+		/// </summary>
+		/// <param name="message">Message to be send. This must be a serialisable type</param>
+		/// <param name="routingKey">Routing key to use to send the message</param>
+		public void SendMessage<T>(T message, string routingKey) where T : class, IMessage
+		{
+			_loopbackReceiver.Send(message, routingKey);
 		}
 
 		/// <summary> No action </summary>
