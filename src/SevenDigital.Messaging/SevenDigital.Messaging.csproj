@@ -64,6 +64,7 @@
     <Compile Include="ConfigurationActions\SDM_LocalQueueOptions.cs" />
     <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="IHandlerExceptionMessage.cs" />
+    <Compile Include="Loopback\TypeRoutingKeyPair.cs" />
     <Compile Include="MessageReceiving\LocalQueue\DummyMessageRouter.cs" />
     <Compile Include="ConfigurationActions\LocalQueueConfig.cs" />
     <Compile Include="MessageReceiving\LocalQueue\LocalQueuePollingNode.cs" />

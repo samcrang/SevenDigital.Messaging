@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using SevenDigital.Messaging.MessageReceiving;
@@ -48,15 +47,7 @@ namespace SevenDigital.Messaging.Loopback
 			if (capturedEndpoints.Contains(endpoint.ToString())) return new DummyReceiver();
 
 			capturedEndpoints.Add(endpoint.ToString());
-			return Listen(bindings);
-		}
-
-		/// <summary>
-		/// Returns all endpoint names that have been passed using "TakeFrom" rather than "Listen"
-		/// </summary>
-		public IEnumerable<string> CompetitiveEndpoints()
-		{
-			return capturedEndpoints;
+			return Listen(routingKey, bindings);
 		}
 
 		/// <summary>
@@ -65,7 +56,16 @@ namespace SevenDigital.Messaging.Loopback
 		/// </summary>
 		public IReceiverNode Listen(Action<IMessageBinding> bindings)
 		{
-			var node = new LoopbackReceiverNode(this);
+			return Listen(string.Empty, bindings);
+		}
+
+		/// <summary>
+		/// Map handlers to a listener on a unique endpoint.
+		/// All listeners mapped this way will receive all messages.
+		/// </summary>
+		public IReceiverNode Listen(string routingKey, Action<IMessageBinding> bindings)
+		{
+			var node = new LoopbackReceiverNode(this, routingKey);
 
 			var binding = new Binding();
 			if (bindings != null) bindings(binding);
@@ -77,14 +77,15 @@ namespace SevenDigital.Messaging.Loopback
 		/// <summary>
 		/// Bind a message to a handler
 		/// </summary>
-		public void Bind(Type msg, Type handler)
+		public void Bind(Type msg, string routingKey, Type handler)
 		{
-			if (!listenerBindings.IsMessageRegistered(msg))
-				listenerBindings.AddMessageType(msg);
+			var key = new TypeRoutingKeyPair(msg, routingKey);
+			if (!listenerBindings.IsMessageRegistered(key))
+				listenerBindings.AddMessageType(key);
 
-			if (listenerBindings[msg].Contains(handler)) return;
+			if (listenerBindings[key].Contains(handler)) return;
 
-			listenerBindings[msg].Add(handler);
+			listenerBindings[key].Add(handler);
 		}
 
 		/// <summary>
@@ -104,7 +105,8 @@ namespace SevenDigital.Messaging.Loopback
 		void FireCooperativeListeners<T>(T message, string routingKey) where T : IMessage
 		{
 			var msg = message.GetType();
-			var matches = listenerBindings.MessagesRegistered.Where(k => k.IsAssignableFrom(msg));
+
+			var matches = listenerBindings.MessagesRegistered.Where(k => IsBindingMatching(k, msg, routingKey));
 			foreach (var key in matches)
 			{
 				var handlers = listenerBindings[key].Select(ObjectFactory.GetInstance);
@@ -134,6 +136,13 @@ namespace SevenDigital.Messaging.Loopback
 					}
 				}
 			}
+		}
+
+		private static bool IsBindingMatching(TypeRoutingKeyPair bindingInfo, Type msg, string routingKey)
+		{
+			return bindingInfo.Type.IsAssignableFrom(msg)
+				&& (bindingInfo.RoutingKey == routingKey
+				|| bindingInfo.RoutingKey == "#");
 		}
 
 		/// <summary>

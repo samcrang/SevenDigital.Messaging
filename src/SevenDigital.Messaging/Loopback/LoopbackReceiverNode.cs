@@ -9,15 +9,17 @@ namespace SevenDigital.Messaging.Loopback
 	public sealed class LoopbackReceiverNode : IReceiverNode
 	{
 		readonly LoopbackReceiver _loopbackReceiver;
-		
+		readonly string _routingKey;
+
 		/// <summary>
 		/// Create a loopback node.
 		/// You shouldn't create this yourself.
 		/// Use `Messaging.Receiver()` in loopback mode
 		/// </summary>
-		public LoopbackReceiverNode(LoopbackReceiver _loopbackReceiver)
+		public LoopbackReceiverNode(LoopbackReceiver loopbackReceiver, string routingKey)
 		{
-			this._loopbackReceiver = _loopbackReceiver;
+			_loopbackReceiver = loopbackReceiver;
+			_routingKey = routingKey;
 		}
 
 		/// <summary>
@@ -33,7 +35,7 @@ namespace SevenDigital.Messaging.Loopback
 			foreach (var binding in bindings.AllBindings())
 			{
 				Type messageType = binding.Item1, handlerType = binding.Item2;
-				_loopbackReceiver.Bind(messageType, handlerType);
+				_loopbackReceiver.Bind(messageType,_routingKey, handlerType);
 			}
 		}
 

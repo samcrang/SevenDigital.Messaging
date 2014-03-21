@@ -27,6 +27,12 @@ namespace SevenDigital.Messaging
 		/// All listeners mapped this way will receive all messages.
 		/// </summary>
 		IReceiverNode Listen(Action<IMessageBinding> bindings);
+
+		/// <summary>
+		/// Map handlers to a listener on a unique endpoint.
+		/// All listeners mapped this way will receive all messages.
+		/// </summary>
+		IReceiverNode Listen(string routingKey, Action<IMessageBinding> bindings);
 	}
 
 

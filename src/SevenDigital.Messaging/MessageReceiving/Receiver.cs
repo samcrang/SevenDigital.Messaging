@@ -90,7 +90,16 @@ namespace SevenDigital.Messaging.MessageReceiving
 		/// </summary>
 		public IReceiverNode Listen(Action<IMessageBinding> bindings)
 		{
-			return TakeFrom(_uniqueEndPointGenerator.Generate(), bindings);
+			return Listen(string.Empty, bindings);
+		}
+
+		/// <summary>
+		/// Map handlers to a listener on a unique endpoint.
+		/// All listeners mapped this way will receive all messages.
+		/// </summary>
+		public IReceiverNode Listen(string routingKey, Action<IMessageBinding> bindings)
+		{
+			return TakeFrom(_uniqueEndPointGenerator.Generate(), routingKey, bindings);
 		}
 
 		/// <summary>
